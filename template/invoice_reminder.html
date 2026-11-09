@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load ff_tags %}
+{% block title %}Send reminder{% endblock %}
+{% block content %}
+<div style="max-width:780px">
+
+  <a class="ff-back" href="{% url 'invoice_detail' invoice.pk %}"><i class="bi bi-arrow-left"></i>Back to invoice {{ invoice.number }}</a>
+
+  <div class="card mb-3"><div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="text-muted small">Client</div>
+        <div class="fw-semibold">{{ invoice.project.client.name }}</div>
+        <div class="small text-muted text-break">{{ invoice.project.client.email }}</div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="text-muted small">Amount due</div>
+        <div class="fw-semibold">{{ invoice.total|inr }}</div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="text-muted small">Due date</div>
+        <div class="fw-semibold">{{ invoice.due_date|date:"d M Y" }}</div>
+      </div>
+      <div class="col-md-2">
+        <div class="text-muted small">Status</div>
+        {% if is_overdue %}<span class="badge-s s-overdue">Overdue</span>
+        {% else %}<span class="badge-s s-sent">Sent</span>{% endif %}
+      </div>
+    </div>
+    {% if invoice.reminder_count %}
+      <div class="small text-muted mt-3">
+        <i class="bi bi-bell me-1"></i>{{ invoice.reminder_count }} reminder{{ invoice.reminder_count|pluralize }} sent so far.
+        Last one on {{ invoice.last_reminder_date|date:"d M Y" }}.
+      </div>
+    {% endif %}
+  </div></div>
+
+  <div class="card"><div class="card-body p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
+      <h1 class="h4 mb-0">Send a reminder</h1>
+      {% if is_overdue %}
+        <div class="btn-group btn-group-sm ff-seg" role="group" aria-label="Tone of the message">
+          <a class="btn {% if tone == 'polite' %}on{% endif %}" href="?tone=polite">Polite</a>
+          <a class="btn {% if tone == 'firm' %}on{% endif %}" href="?tone=firm">Firm</a>
+        </div>
+      {% endif %}
+    </div>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="mb-3 text-muted small">To: {{ invoice.project.client.email }}</div>
+      {% include "_form_fields.html" %}
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary"><i class="bi bi-send me-1"></i>Send reminder</button>
+        <a class="btn btn-outline-secondary" href="{% url 'invoice_detail' invoice.pk %}">Cancel</a>
+      </div>
+    </form>
+
+    <div class="ff-note mt-4">
+      <i class="bi bi-info-circle"></i>
+      {% if console_mode %}
+        Test mode: the email is printed in the terminal where the server is running. Nothing is sent to the client.
+      {% else %}
+        The email will be sent to the client's address.
+      {% endif %}
+    </div>
+  </div></div>
+
+</div>
+{% endblock %}

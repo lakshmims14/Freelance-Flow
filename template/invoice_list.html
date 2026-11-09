@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load ff_tags %}
+{% block title %}Invoices{% endblock %}
+{% block content %}
+
+<div class="ff-head">
+  <div>
+    <h1>Invoices</h1>
+    <div class="sub">Every amount shows the GST separately, so you can see what you earn and what you collect for the government.</div>
+  </div>
+  <div class="actions">
+    <a class="btn btn-primary" href="{% url 'invoice_create' %}"><i class="bi bi-plus-lg me-1"></i>Create invoice</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4"><div class="card"><div class="card-body ff-stat">
+    <div class="icon tone-success"><i class="bi bi-check2-circle"></i></div>
+    <div><div class="label">Received</div><div class="value">{{ received|inr }}</div></div>
+  </div></div></div>
+  <div class="col-md-4"><div class="card"><div class="card-body ff-stat">
+    <div class="icon tone-warning"><i class="bi bi-hourglass-split"></i></div>
+    <div><div class="label">Waiting</div><div class="value">{{ waiting|inr }}</div></div>
+  </div></div></div>
+  <div class="col-md-4"><div class="card"><div class="card-body ff-stat">
+    <div class="icon tone-danger"><i class="bi bi-exclamation-circle"></i></div>
+    <div><div class="label">Overdue</div><div class="value">{{ overdue_amount|inr }}</div></div>
+  </div></div></div>
+</div>
+
+<form class="ff-toolbar" role="search">
+  <div class="ff-search">
+    <i class="bi bi-search"></i>
+    <input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="Search number, project or client" aria-label="Search invoices">
+  </div>
+  <select name="status" class="form-select" aria-label="Filter by status">
+    <option value="">All statuses</option>
+    {% for value, label in statuses %}
+      <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn btn-outline-secondary">Filter</button>
+  {% if request.GET.q or request.GET.status %}<a class="btn btn-link" href="{% url 'invoice_list' %}">Reset</a>{% endif %}
+</form>
+
+<div class="card"><div class="table-responsive"><table class="table table-hover">
+  <thead>
+    <tr><th>Invoice</th><th>Client and project</th><th>Due</th><th class="num">Amount</th><th class="num">GST</th><th class="num">Total</th><th>Status</th><th></th></tr>
+  </thead>
+  <tbody>
+  {% for i in invoices %}
+    <tr>
+      <td><a class="fw-semibold" href="{% url 'invoice_detail' i.pk %}">{{ i.number }}</a>
+          <div class="small text-muted">{{ i.issue_date|date:"d M Y" }}</div></td>
+      <td>{{ i.project.client }}<div class="small text-muted">{{ i.project }}</div></td>
+      <td {% if i.is_overdue %}class="text-danger fw-semibold"{% endif %}>{{ i.due_date|date:"d M Y" }}</td>
+      <td class="num">{{ i.amount|inr }}</td>
+      <td class="num text-muted">{{ i.tax|inr }}<div class="small">{{ i.gst_percent|floatformat:"-2" }}%</div></td>
+      <td class="num fw-bold">{{ i.total|inr }}</td>
+      <td>{% if i.is_overdue %}<span class="badge-s s-overdue">Overdue</span>{% else %}<span class="badge-s s-{{ i.status }}">{{ i.get_status_display }}</span>{% endif %}</td>
+      <td class="text-end text-nowrap">
+        <a class="btn btn-outline-primary btn-icon btn-sm" href="{% url 'invoice_update' i.pk %}" title="Edit" aria-label="Edit {{ i.number }}"><i class="bi bi-pencil"></i></a>
+        <a class="btn btn-outline-danger btn-icon btn-sm" href="{% url 'invoice_delete' i.pk %}" title="Delete" aria-label="Delete {{ i.number }}"><i class="bi bi-trash"></i></a>
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="8"><div class="ff-empty"><i class="bi bi-receipt"></i><div class="title">No invoices found</div>Create an invoice for a project, or reset the filters.</div></td></tr>
+  {% endfor %}
+  </tbody>
+</table></div></div>
+{% endblock %}

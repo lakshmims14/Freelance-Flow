@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div style="max-width:720px">
+  <a class="ff-back" href="javascript:history.back()"><i class="bi bi-arrow-left"></i> Back</a>
+  <div class="card"><div class="card-body p-4">
+    <h1 class="h4 mb-4">{{ title }}</h1>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "_form_fields.html" %}
+      <div class="d-flex gap-2 mt-4">
+        <button class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Save</button>
+        <a class="btn btn-outline-secondary" href="javascript:history.back()">Cancel</a>
+      </div>
+    </form>
+  </div></div>
+</div>
+{% endblock %}

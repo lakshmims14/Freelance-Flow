@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load ff_tags %}
+{% block title %}{{ client.name }}{% endblock %}
+{% block content %}
+
+<a class="ff-back" href="{% url 'client_list' %}"><i class="bi bi-arrow-left"></i>All clients</a>
+
+<div class="ff-head">
+  <div class="d-flex gap-3 align-items-center">
+    <div class="ff-avatar ff-avatar-lg" style="width:56px;height:56px;font-size:1.3rem">{{ client.name|slice:":1"|upper }}</div>
+    <div>
+      <h1>{{ client.name }}</h1>
+      <div class="sub mt-0">{{ client.company|default:"Independent" }}</div>
+    </div>
+  </div>
+  <div class="actions">
+    <a class="btn btn-outline-primary" href="{% url 'client_update' client.pk %}"><i class="bi bi-pencil me-1"></i>Edit</a>
+    <a class="btn btn-outline-danger" href="{% url 'client_delete' client.pk %}"><i class="bi bi-trash me-1"></i>Delete</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-8"><div class="card h-100"><div class="card-body">
+    <h2 class="ff-panel-title mb-3">Contact</h2>
+    <div class="row g-3">
+      <div class="col-md-4"><div class="text-muted small">Email</div><div class="text-break"><i class="bi bi-envelope me-2 text-muted"></i>{{ client.email }}</div></div>
+      <div class="col-md-4"><div class="text-muted small">Phone</div><div><i class="bi bi-telephone me-2 text-muted"></i>{{ client.phone|default:"—" }}</div></div>
+      <div class="col-md-4"><div class="text-muted small">Country</div><div><i class="bi bi-geo-alt me-2 text-muted"></i>{{ client.country }}</div></div>
+    </div>
+  </div></div></div>
+
+  <div class="col-lg-4"><div class="card h-100"><div class="card-body">
+    <h2 class="ff-panel-title mb-3">Payment reliability</h2>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <span class="badge-s s-{{ client.reliability_label|cut:' '|lower }}">{{ client.reliability_label }}</span>
+      {% if client.reliability_score != None %}<b>{{ client.reliability_score }}<span class="text-muted fw-normal">/100</span></b>{% endif %}
+    </div>
+    <div class="ff-meter is-{{ client.reliability_label|cut:' '|lower }}"><span style="width:{{ client.reliability_score|default:0 }}%"></span></div>
+    <div class="small text-muted mt-2">Based on how many days late this client's paid invoices were.</div>
+  </div></div></div>
+</div>
+
+<div class="ff-panel-head">
+  <h2 class="ff-panel-title">Projects</h2>
+  <a class="btn btn-sm btn-primary" href="{% url 'project_create' %}?client={{ client.pk }}"><i class="bi bi-plus-lg me-1"></i>New project</a>
+</div>
+
+<div class="card"><div class="table-responsive"><table class="table table-hover">
+  <thead><tr><th>Title</th><th>Status</th><th class="num">Budget</th><th>Deadline</th></tr></thead>
+  <tbody>
+  {% for p in projects %}
+    <tr>
+      <td><a class="fw-semibold" href="{% url 'project_detail' p.pk %}">{{ p.title }}</a></td>
+      <td><span class="badge-s s-{{ p.status }}">{{ p.get_status_display }}</span></td>
+      <td class="num">{{ p.budget|inr }}</td>
+      <td>{{ p.deadline|date:"d M Y" }}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="4" class="text-muted text-center py-4">No projects yet. Add one with the button above.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div></div>
+{% endblock %}

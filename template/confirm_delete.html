@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Delete{% endblock %}
+{% block content %}
+<div style="max-width:520px">
+  <div class="card" style="border-color:rgba(251,113,133,.5)"><div class="card-body p-4 text-center">
+    <div class="ff-stat justify-content-center mb-2"><div class="icon tone-danger" style="width:56px;height:56px;font-size:1.6rem"><i class="bi bi-trash3"></i></div></div>
+    <h1 class="h4 mt-2">Delete "{{ object }}"?</h1>
+    <p class="text-muted">This cannot be undone. Anything linked to it (for example a client's projects, tasks and invoices) is deleted too.</p>
+    <form method="post" class="d-flex gap-2 justify-content-center">
+      {% csrf_token %}
+      <button class="btn btn-danger">Yes, delete</button>
+      <a class="btn btn-outline-secondary" href="{% url cancel_url cancel_pk %}">Cancel</a>
+    </form>
+  </div></div>
+</div>
+{% endblock %}

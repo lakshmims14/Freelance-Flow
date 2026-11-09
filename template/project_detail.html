@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load ff_tags %}
+{% block title %}{{ project.title }}{% endblock %}
+{% block content %}
+
+<a class="ff-back" href="{% url 'project_list' %}"><i class="bi bi-arrow-left"></i>All projects</a>
+
+<div class="ff-head">
+  <div>
+    <h1>{{ project.title }}</h1>
+    <div class="sub mt-2">
+      <a href="{% url 'client_detail' project.client.pk %}" class="text-decoration-none"><i class="bi bi-person me-1"></i>{{ project.client }}</a>
+      <span class="badge-s s-{{ project.status }} ms-2">{{ project.get_status_display }}</span>
+    </div>
+  </div>
+  <div class="actions">
+    <a class="btn btn-outline-primary" href="{% url 'project_update' project.pk %}"><i class="bi bi-pencil me-1"></i>Edit</a>
+    <a class="btn btn-outline-danger" href="{% url 'project_delete' project.pk %}"><i class="bi bi-trash me-1"></i>Delete</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-lg-3"><div class="card h-100"><div class="card-body ff-stat">
+    <div class="icon tone-primary"><i class="bi bi-cash-stack"></i></div>
+    <div><div class="label">Budget</div><div class="value">{{ project.budget|inr }}</div></div>
+  </div></div></div>
+  <div class="col-sm-6 col-lg-3"><div class="card h-100"><div class="card-body ff-stat">
+    <div class="icon tone-secondary"><i class="bi bi-calendar-range"></i></div>
+    <div><div class="label">Timeline</div><div class="fw-bold mt-1">{{ project.start_date|date:"d M" }} to {{ project.deadline|date:"d M Y" }}</div></div>
+  </div></div></div>
+  <div class="col-sm-6 col-lg-3"><div class="card h-100"><div class="card-body">
+    <div class="d-flex justify-content-between"><span class="text-muted small">Progress</span><b>{{ project.progress }}%</b></div>
+    <div class="progress mt-3 {% if project.progress == 100 %}is-done{% elif project.is_overdue %}is-late{% endif %}" style="height:8px"><div class="progress-bar" style="width:{{ project.progress }}%"></div></div>
+    <div class="small text-muted mt-2">of tasks done</div>
+  </div></div></div>
+  <div class="col-sm-6 col-lg-3"><div class="card h-100"><div class="card-body ff-stat">
+    <div class="icon tone-warning"><i class="bi bi-receipt"></i></div>
+    <div><div class="label">Invoices</div><div class="value">{{ invoices|length }}</div></div>
+  </div></div></div>
+</div>
+
+{% if project.description %}<p class="text-muted" style="max-width:70ch">{{ project.description }}</p>{% endif %}
+
+<!-- Tasks -->
+<div class="ff-panel-head mt-4">
+  <h2 class="ff-panel-title">Tasks</h2>
+  <a class="btn btn-sm btn-primary" href="{% url 'task_create' %}?project={{ project.pk }}"><i class="bi bi-plus-lg me-1"></i>Add task</a>
+</div>
+<div class="card mb-4"><div class="table-responsive"><table class="table table-hover">
+  <thead><tr><th>Task</th><th>Status</th><th>Priority</th><th>Due</th><th class="num">Est. hours</th><th></th></tr></thead>
+  <tbody>
+  {% for t in tasks %}
+    <tr>
+      <td class="fw-semibold">{{ t.title }}</td>
+      <td><span class="badge-s s-{{ t.status }}">{{ t.get_status_display }}</span></td>
+      <td><span class="badge-s s-{{ t.priority }}">{{ t.get_priority_display }}</span></td>
+      <td>{{ t.due_date|date:"d M"|default:"—" }}</td>
+      <td class="num">{{ t.hours_estimated }}</td>
+      <td class="text-end text-nowrap">
+        <a class="btn btn-outline-primary btn-icon btn-sm" href="{% url 'task_update' t.pk %}" title="Edit task" aria-label="Edit {{ t.title }}"><i class="bi bi-pencil"></i></a>
+        <a class="btn btn-outline-danger btn-icon btn-sm" href="{% url 'task_delete' t.pk %}" title="Delete task" aria-label="Delete {{ t.title }}"><i class="bi bi-trash"></i></a>
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="6" class="text-muted text-center py-4">No tasks yet. Add the first step of this project.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div></div>
+
+<!-- Invoices -->
+<div class="ff-panel-head">
+  <h2 class="ff-panel-title">Invoices</h2>
+  <a class="btn btn-sm btn-primary" href="{% url 'invoice_create' %}?project={{ project.pk }}"><i class="bi bi-plus-lg me-1"></i>Create invoice</a>
+</div>
+<div class="card"><div class="table-responsive"><table class="table table-hover">
+  <thead><tr><th>Number</th><th class="num">Total (incl. GST)</th><th>Due</th><th>Status</th></tr></thead>
+  <tbody>
+  {% for i in invoices %}
+    <tr>
+      <td><a class="fw-semibold" href="{% url 'invoice_detail' i.pk %}">{{ i.number }}</a></td>
+      <td class="num">{{ i.total|inr }}</td>
+      <td>{{ i.due_date|date:"d M Y" }}</td>
+      <td>{% if i.is_overdue %}<span class="badge-s s-overdue">Overdue</span>{% else %}<span class="badge-s s-{{ i.status }}">{{ i.get_status_display }}</span>{% endif %}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="4" class="text-muted text-center py-4">No invoices yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div></div>
+{% endblock %}

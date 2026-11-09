@@ -1,0 +1,111 @@
+{% load ff_tags %}<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Invoice {{ invoice.number }}</title>
+<style>
+  @page { size: A4; margin: 1.8cm; }
+  body { font-family: Helvetica; font-size: 10pt; color: #1f2a44; }
+  h1 { font-size: 24pt; color: #4f46e5; margin: 0; }
+  table { width: 100%; }
+  td, th { vertical-align: top; }
+  .muted { color: #6b7280; }
+  .right { text-align: right; }
+  .label { font-size: 8pt; color: #6b7280; }
+  .items th { background-color: #1f2a44; color: #ffffff; padding: 7px; text-align: left; }
+  .items td { padding: 8px 7px; border-bottom: 1px solid #d1d5db; }
+  .sum td { padding: 5px 7px; }
+  .grand td { font-size: 12pt; font-weight: bold; padding: 8px 7px; border-top: 2px solid #1f2a44; }
+  .box { border: 1px solid #d1d5db; padding: 8px; }
+  .status { font-weight: bold; }
+</style>
+</head>
+<body>
+
+<table>
+  <tr>
+    <td style="width:55%">
+      <h1>INVOICE</h1>
+      <div class="muted">{{ invoice.number }}</div>
+    </td>
+    <td class="right">
+      <div class="label">FROM</div>
+      <div><b>{{ freelancer.get_full_name|default:freelancer.username }}</b></div>
+      {% if freelancer.email %}<div class="muted">{{ freelancer.email }}</div>{% endif %}
+    </td>
+  </tr>
+</table>
+
+<br/><br/>
+
+<table>
+  <tr>
+    <td style="width:55%">
+      <div class="label">BILLED TO</div>
+      <div><b>{{ invoice.project.client.name }}</b></div>
+      {% if invoice.project.client.company %}<div>{{ invoice.project.client.company }}</div>{% endif %}
+      <div class="muted">{{ invoice.project.client.email }}</div>
+      <div class="muted">{{ invoice.project.client.country }}</div>
+    </td>
+    <td class="right">
+      <div><span class="muted">Issue date:</span> {{ invoice.issue_date|date:"d M Y" }}</div>
+      <div><span class="muted">Due date:</span> {{ invoice.due_date|date:"d M Y" }}</div>
+      {% if invoice.paid_date %}<div><span class="muted">Paid on:</span> {{ invoice.paid_date|date:"d M Y" }}</div>{% endif %}
+      <div><span class="muted">Status:</span> <span class="status">{{ invoice.get_status_display|upper }}</span></div>
+    </td>
+  </tr>
+</table>
+
+<br/><br/>
+
+<table class="items">
+  <tr>
+    <th>Description</th>
+    <th style="width:30%; text-align:right">Amount</th>
+  </tr>
+  <tr>
+    <td>
+      <b>Professional services</b><br/>
+      <span class="muted">Project: {{ invoice.project.title }}</span>
+    </td>
+    <td class="right">{{ invoice.amount|inr_pdf }}</td>
+  </tr>
+</table>
+
+<br/>
+
+<table>
+  <tr>
+    <td style="width:50%"></td>
+    <td>
+      <table class="sum">
+        <tr><td>Taxable amount</td><td class="right">{{ invoice.amount|inr_pdf }}</td></tr>
+        <tr><td>GST @ {{ invoice.gst_percent }}%</td><td class="right">{{ invoice.tax|inr_pdf }}</td></tr>
+      </table>
+      <table class="grand">
+        <tr><td>Total</td><td class="right">{{ invoice.total|inr_pdf }}</td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<br/>
+
+<div class="box">
+  <span class="label">AMOUNT IN WORDS</span><br/>
+  {{ invoice.total|rupees_words }}
+</div>
+
+{% if invoice.notes %}
+<br/>
+<div class="label">NOTES</div>
+<div>{{ invoice.notes }}</div>
+{% endif %}
+
+<br/><br/>
+<div class="muted" style="font-size:8pt; text-align:center">
+  This is a computer-generated invoice and does not need a signature.
+</div>
+
+</body>
+</html>

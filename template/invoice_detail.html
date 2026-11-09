@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load ff_tags %}
+{% block title %}Invoice {{ invoice.number }}{% endblock %}
+{% block content %}
+
+<a class="ff-back d-print-none" href="{% url 'invoice_list' %}"><i class="bi bi-arrow-left"></i>All invoices</a>
+
+<div class="ff-head">
+  <div class="d-flex align-items-center gap-3 flex-wrap">
+    <h1>Invoice {{ invoice.number }}</h1>
+    {% if invoice.is_overdue %}<span class="badge-s s-overdue">Overdue</span>
+    {% else %}<span class="badge-s s-{{ invoice.status }}">{{ invoice.get_status_display }}</span>{% endif %}
+  </div>
+  <div class="actions d-print-none">
+    <a class="btn btn-outline-success" href="{% url 'invoice_pdf' invoice.pk %}" target="_blank"><i class="bi bi-file-earmark-pdf me-1"></i>PDF</a>
+    <button class="btn btn-outline-secondary" onclick="window.print()"><i class="bi bi-printer me-1"></i>Print</button>
+    {% if invoice.status == 'sent' %}
+    <a class="btn btn-warning" href="{% url 'invoice_reminder' invoice.pk %}"><i class="bi bi-bell me-1"></i>Send reminder</a>
+    {% endif %}
+    <a class="btn btn-outline-primary" href="{% url 'invoice_update' invoice.pk %}"><i class="bi bi-pencil me-1"></i>Edit</a>
+    <a class="btn btn-outline-danger" href="{% url 'invoice_delete' invoice.pk %}"><i class="bi bi-trash me-1"></i>Delete</a>
+  </div>
+</div>
+
+<div class="card ff-doc"><div class="card-body p-4">
+
+  <div class="row g-4 mb-4">
+    <div class="col-md-6">
+      <div class="label text-muted small">Billed to</div>
+      <div class="fw-bold fs-5">{{ invoice.project.client.name }}</div>
+      <div>{{ invoice.project.client.company }}</div>
+      <div class="text-muted">{{ invoice.project.client.email }}</div>
+    </div>
+    <div class="col-md-6 text-md-end">
+      <div class="ff-kv"><span>Issued</span><span>{{ invoice.issue_date|date:"d M Y" }}</span></div>
+      <div class="ff-kv"><span>Due</span><span {% if invoice.is_overdue %}class="text-danger fw-semibold"{% endif %}>{{ invoice.due_date|date:"d M Y" }}</span></div>
+      {% if invoice.paid_date %}<div class="ff-kv"><span>Paid on</span><span class="text-success">{{ invoice.paid_date|date:"d M Y" }}</span></div>{% endif %}
+      <div class="ff-kv"><span>Project</span><a href="{% url 'project_detail' invoice.project.pk %}">{{ invoice.project }}</a></div>
+    </div>
+  </div>
+
+  <table class="table lines">
+    <tbody>
+      <tr><td>Professional services</td><td class="text-end">{{ invoice.amount|inr }}</td></tr>
+      <tr><td class="text-muted">GST @ {{ invoice.gst_percent|floatformat:"-2" }}%</td><td class="text-end">{{ invoice.tax|inr }}</td></tr>
+      <tr class="grand"><td>Total</td><td class="text-end">{{ invoice.total|inr }}</td></tr>
+    </tbody>
+  </table>
+  <div class="ff-words mt-1">{{ invoice.total|rupees_words }}</div>
+
+  {% if invoice.notes %}
+    <div class="ff-note mt-4"><i class="bi bi-sticky"></i><span>{{ invoice.notes }}</span></div>
+  {% endif %}
+</div></div>
+
+{% if invoice.reminder_count %}
+  <div class="text-muted small mt-3 d-print-none">
+    <i class="bi bi-bell me-1"></i>{{ invoice.reminder_count }} reminder{{ invoice.reminder_count|pluralize }} sent, last on {{ invoice.last_reminder_date|date:"d M Y" }}
+  </div>
+{% endif %}
+{% endblock %}

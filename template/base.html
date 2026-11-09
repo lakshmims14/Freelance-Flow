@@ -1,0 +1,61 @@
+{% load static %}<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <title>{% block title %}FreelanceFlow{% endblock %} · FreelanceFlow</title>
+  {% include "_head.html" %}
+  {% block head %}{% endblock %}
+</head>
+<body>
+<div class="ff-app">
+
+  <!-- Top bar: only on phones, holds the menu button -->
+  <header class="ff-topbar d-md-none" style="grid-column:1/-1">
+    <button class="btn btn-outline-secondary btn-icon" type="button" data-bs-toggle="offcanvas" data-bs-target="#ffNav" aria-controls="ffNav" aria-label="Open menu">
+      <i class="bi bi-list fs-5"></i>
+    </button>
+    <a class="ff-brand" href="{% url 'dashboard' %}"><span class="ff-mark"><i class="bi bi-currency-rupee"></i></span>FreelanceFlow</a>
+  </header>
+
+  <aside class="ff-sidebar offcanvas-md offcanvas-start" tabindex="-1" id="ffNav" aria-label="Main menu">
+    <div class="ff-sidebar-inner">
+      <a class="ff-brand" href="{% url 'dashboard' %}"><span class="ff-mark"><i class="bi bi-currency-rupee"></i></span>FreelanceFlow</a>
+
+      <ul class="ff-nav">
+        <li><a class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}"><i class="bi bi-grid-1x2"></i>Dashboard</a></li>
+        <li><a class="{% if 'client' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'client_list' %}"><i class="bi bi-people"></i>Clients</a></li>
+        <li><a class="{% if 'project' in request.resolver_match.url_name or 'task' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'project_list' %}"><i class="bi bi-kanban"></i>Projects</a></li>
+        <li><a class="{% if 'invoice' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'invoice_list' %}"><i class="bi bi-receipt"></i>Invoices</a></li>
+        <li class="ff-nav-title">Insights</li>
+        <li><a class="{% if request.resolver_match.url_name == 'gst_summary' %}active{% endif %}" href="{% url 'gst_summary' %}"><i class="bi bi-percent"></i>GST Summary</a></li>
+        <li><a class="{% if request.resolver_match.url_name == 'forecast' %}active{% endif %}" href="{% url 'forecast' %}"><i class="bi bi-graph-up-arrow"></i>Forecast</a></li>
+        <li><a class="{% if request.resolver_match.url_name == 'assistant' %}active{% endif %}" href="{% url 'assistant' %}"><i class="bi bi-stars"></i>Assistant<span class="ff-pill">AI</span></a></li>
+      </ul>
+
+      <div class="ff-user">
+        <div class="ff-user-card">
+          <div class="ff-avatar">{{ request.user.username|slice:":1"|upper }}</div>
+          <div style="min-width:0">
+            <div class="ff-user-name">{{ request.user.username }}</div>
+            <div class="ff-user-sub">Freelancer</div>
+          </div>
+          <form method="post" action="{% url 'logout' %}" class="ff-logout">
+            {% csrf_token %}
+            <button class="btn btn-outline-secondary btn-icon btn-sm" title="Log out" aria-label="Log out"><i class="bi bi-box-arrow-right"></i></button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="ff-main">
+    <div class="ff-main-inner">
+      {% include "_messages.html" %}
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

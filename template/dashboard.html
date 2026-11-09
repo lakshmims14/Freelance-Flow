@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% load static ff_tags %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+<div class="ff-head">
+  <div>
+    <h1>Dashboard</h1>
+    <div class="sub">Your freelance business at a glance</div>
+  </div>
+  <div class="actions">
+    <a class="btn btn-outline-primary" href="{% url 'client_create' %}"><i class="bi bi-person-plus me-1"></i>Add client</a>
+    <a class="btn btn-outline-primary" href="{% url 'invoice_create' %}"><i class="bi bi-receipt me-1"></i>New invoice</a>
+    <a class="btn btn-primary" href="{% url 'project_create' %}"><i class="bi bi-plus-lg me-1"></i>New project</a>
+  </div>
+</div>
+
+{% if client_count == 0 %}
+  <div class="alert alert-info">
+    <i class="bi bi-info-circle me-1"></i> Welcome! Start by <a href="{% url 'client_create' %}">adding your first client</a>,
+    then create a project and an invoice for them.
+  </div>
+{% endif %}
+
+<!-- Four summary tiles -->
+<div class="row g-3 mb-3">
+  <div class="col-sm-6 col-xl-3"><div class="card h-100"><div class="card-body ff-stat">
+    <div class="icon tone-success"><i class="bi bi-cash-coin"></i></div>
+    <div><div class="label">Received (incl. GST)</div><div class="value">{{ paid_total|inr }}</div></div>
+  </div></div></div>
+
+  <div class="col-sm-6 col-xl-3"><div class="card h-100"><div class="card-body ff-stat">
+    <div class="icon tone-warning"><i class="bi bi-hourglass-split"></i></div>
+    <div><div class="label">Awaiting payment</div><div class="value">{{ pending_total|inr }}</div>
+      {% if overdue_total %}<div class="note text-danger">{{ overdue_total|inr }} of it is overdue</div>{% endif %}</div>
+  </div></div></div>
+
+  <div class="col-sm-6 col-xl-3"><div class="card h-100"><div class="card-body ff-stat">
+    <div class="icon tone-secondary"><i class="bi bi-kanban"></i></div>
+    <div><div class="label">Active projects</div><div class="value">{{ active_projects }}</div>
+      <div class="note">{{ open_tasks }} open task{{ open_tasks|pluralize }}</div></div>
+  </div></div></div>
+
+  <div class="col-sm-6 col-xl-3"><div class="card h-100"><div class="card-body ff-stat">
+    <div class="icon tone-primary"><i class="bi bi-people"></i></div>
+    <div><div class="label">Clients</div><div class="value">{{ client_count }}</div>
+      <div class="note">{{ risky_clients|length }} to watch</div></div>
+  </div></div></div>
+</div>
+
+<!-- Revenue overview -->
+<div class="row g-3 mb-3">
+  <div class="col-lg-8"><div class="card h-100"><div class="card-body">
+    <div class="ff-panel-head">
+      <h2 class="ff-panel-title"><i class="bi bi-bar-chart-line text-primary"></i>Billed each month</h2>
+      <span class="hint">Last 6 months · {{ billed_six_months|inr }}</span>
+    </div>
+    <div class="ff-chart" data-ff-columns data-source="billed-data" data-value-name="Billed (incl. GST)"></div>
+    {{ billed_chart|json_script:"billed-data" }}
+  </div></div></div>
+
+  <div class="col-lg-4"><div class="card h-100"><div class="card-body">
+    <div class="ff-panel-head">
+      <h2 class="ff-panel-title"><i class="bi bi-wallet2 text-primary"></i>Where your money is</h2>
+    </div>
+    <div class="ff-total">{{ money_total|inr }}</div>
+    <div class="text-muted small mb-3">billed and not in draft</div>
+    {% if money_total %}
+      <div class="ff-seg-bar tall" role="img" aria-label="Received, waiting and overdue amounts">
+        {% for s in money_split %}{% if s.amount %}<span class="seg-{{ s.key }}" style="width:{{ s.percent }}%" title="{{ s.label }}: {{ s.amount|inr }}"></span>{% endif %}{% endfor %}
+      </div>
+      <ul class="ff-legend">
+        {% for s in money_split %}
+        <li><span class="dot seg-{{ s.key }}"></span>{{ s.label }}<span class="amt">{{ s.amount|inr }}</span><span class="pct">{{ s.percent }}%</span></li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="text-muted small">Send your first invoice and the split appears here.</div>
+    {% endif %}
+  </div></div></div>
+</div>
+
+<div class="row g-3 mb-3">
+
+  <!-- Overdue invoices -->
+  <div class="col-lg-6 align-self-start"><div class="card"><div class="card-body">
+    <div class="ff-panel-head">
+      <h2 class="ff-panel-title"><i class="bi bi-exclamation-circle text-danger"></i>Overdue invoices</h2>
+      {% if overdue_invoices %}<span class="badge-s s-overdue">{{ overdue_total|inr }}</span>{% endif %}
+    </div>
+    {% for i in overdue_invoices %}
+    <div class="ff-mini-row">
+      <div class="main">
+        <a class="title text-decoration-none" href="{% url 'invoice_detail' i.pk %}">{{ i.number }}</a>
+        <div class="meta">{{ i.project.client }} · due {{ i.due_date|date:"d M" }}</div>
+      </div>
+      <div class="end fw-bold">{{ i.total|inr }}</div>
+      <a class="btn btn-outline-warning btn-icon btn-sm" href="{% url 'invoice_reminder' i.pk %}" title="Send reminder" aria-label="Send reminder for {{ i.number }}"><i class="bi bi-bell"></i></a>
+    </div>
+    {% empty %}
+      <div class="text-muted">Nothing overdue. 🎉</div>
+    {% endfor %}
+  </div></div></div>
+
+  <!-- Upcoming deadlines -->
+  <div class="col-lg-6"><div class="card h-100"><div class="card-body">
+    <div class="ff-panel-head">
+      <h2 class="ff-panel-title"><i class="bi bi-calendar-event text-info"></i>Upcoming deadlines</h2>
+      <a class="ff-link" href="{% url 'project_list' %}">All projects</a>
+    </div>
+    {% for p in upcoming %}
+    <div class="ff-mini-row">
+      <div class="main">
+        <a class="title text-decoration-none" href="{% url 'project_detail' p.pk %}">{{ p.title }}</a>
+        <div class="meta">{{ p.client }}</div>
+        <div class="progress"><div class="progress-bar" style="width:{{ p.progress }}%"></div></div>
+      </div>
+      <div class="end">
+        <span class="ff-due {% if p.days_left <= 7 %}is-soon{% endif %}">{{ p.deadline|date:"d M" }}</span>
+        <div class="meta mt-1">{{ p.progress }}% done</div>
+      </div>
+    </div>
+    {% empty %}
+      <div class="text-muted">No upcoming deadlines.</div>
+    {% endfor %}
+
+    {% if late_projects %}
+      <hr>
+      <div class="small text-danger fw-semibold mb-2">Past deadline</div>
+      {% for p in late_projects %}
+        <a class="d-block small text-decoration-none mb-1" href="{% url 'project_detail' p.pk %}"><span class="ff-due is-late me-2">{{ p.deadline|date:"d M" }}</span>{{ p.title }}</a>
+      {% endfor %}
+    {% endif %}
+  </div></div></div>
+</div>
+
+<div class="row g-3">
+
+  <!-- Client statistics -->
+  <div class="col-lg-4"><div class="card h-100"><div class="card-body">
+    <div class="ff-panel-head">
+      <h2 class="ff-panel-title"><i class="bi bi-trophy text-warning"></i>Top clients</h2>
+      <span class="hint">by amount billed</span>
+    </div>
+    {% if top_clients %}
+    <ol class="ff-rank">
+      {% for t in top_clients %}
+      <li>
+        <div class="row-top"><a class="text-decoration-none" href="{% url 'client_detail' t.client.pk %}">{{ t.client.name }}</a><b>{{ t.amount|inr }}</b></div>
+        <div class="bar"><span style="width:{{ t.width }}%"></span></div>
+      </li>
+      {% endfor %}
+    </ol>
+    {% else %}
+      <div class="text-muted small">No billed invoices yet.</div>
+    {% endif %}
+  </div></div></div>
+
+  <div class="col-lg-4"><div class="card h-100"><div class="card-body">
+    <div class="ff-panel-head">
+      <h2 class="ff-panel-title"><i class="bi bi-shield-check text-success"></i>Client reliability</h2>
+    </div>
+    {% if reliability_split %}
+      <div class="ff-seg-bar tall" role="img" aria-label="Clients by reliability">
+        {% for s in reliability_split %}<span class="seg-{{ s.key }}" style="width:{{ s.percent }}%" title="{{ s.label }}: {{ s.count }}"></span>{% endfor %}
+      </div>
+      <ul class="ff-legend mb-3">
+        {% for s in reliability_split %}
+        <li><span class="dot seg-{{ s.key }}"></span>{{ s.label }}<span class="amt">{{ s.count }}</span><span class="pct">{{ s.percent }}%</span></li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <div class="small text-muted fw-semibold mb-2">Clients to watch</div>
+    {% for c in risky_clients %}
+    <div class="ff-mini-row">
+      <div class="main"><a class="title text-decoration-none" href="{% url 'client_detail' c.pk %}">{{ c.name }}</a><div class="meta">{{ c.company }}</div></div>
+      <div class="end"><span class="badge-s s-risky">Score {{ c.reliability_score }}</span></div>
+    </div>
+    {% empty %}
+      <div class="text-muted small">No risky clients. Every client is paying on time or has no history yet.</div>
+    {% endfor %}
+  </div></div></div>
+
+  <!-- Project progress -->
+  <div class="col-lg-4"><div class="card h-100"><div class="card-body">
+    <div class="ff-panel-head">
+      <h2 class="ff-panel-title"><i class="bi bi-pie-chart text-primary"></i>Projects by status</h2>
+    </div>
+    {% for s in status_counts %}
+      <div class="ff-kv"><span><span class="badge-s s-{{ s.value }}">{{ s.label }}</span></span><b>{{ s.count }}</b></div>
+    {% empty %}
+      <div class="text-muted small">No projects yet.</div>
+    {% endfor %}
+    <div class="ff-note mt-3"><i class="bi bi-check2-square"></i>{{ open_tasks }} open task{{ open_tasks|pluralize }} across your projects</div>
+  </div></div></div>
+
+</div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/ff-charts.js' %}"></script>{% endblock %}

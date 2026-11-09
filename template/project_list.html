@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load ff_tags %}
+{% block title %}Projects{% endblock %}
+{% block content %}
+
+<div class="ff-head">
+  <div>
+    <h1>Projects</h1>
+    <div class="sub">Progress comes from finished tasks. Deadlines turn amber when they are a week away and red when they have passed.</div>
+  </div>
+  <div class="actions">
+    <a class="btn btn-primary" href="{% url 'project_create' %}"><i class="bi bi-plus-lg me-1"></i>New project</a>
+  </div>
+</div>
+
+<form class="ff-toolbar" role="search">
+  <div class="ff-search">
+    <i class="bi bi-search"></i>
+    <input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="Search project or client" aria-label="Search projects">
+  </div>
+  <select name="status" class="form-select" aria-label="Filter by status">
+    <option value="">All statuses</option>
+    {% for value, label in statuses %}
+      <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn btn-outline-secondary">Filter</button>
+  {% if request.GET.q or request.GET.status %}<a class="btn btn-link" href="{% url 'project_list' %}">Reset</a>{% endif %}
+</form>
+
+{% if projects %}
+<div class="ff-grid">
+  {% for p in projects %}
+  <div class="card ff-item">
+    <div class="top">
+      <div style="min-width:0;flex:1">
+        <a class="name" href="{% url 'project_detail' p.pk %}">{{ p.title }}</a>
+        <div class="sub">{{ p.client }}</div>
+      </div>
+      <span class="badge-s s-{{ p.status }}">{{ p.get_status_display }}</span>
+    </div>
+
+    <div class="my-3">
+      <div class="d-flex justify-content-between small text-muted mb-1"><span>Progress</span><span>{{ p.progress }}%</span></div>
+      <div class="progress {% if p.status == 'completed' or p.progress == 100 %}is-done{% elif p.is_overdue %}is-late{% endif %}"><div class="progress-bar" style="width:{{ p.progress }}%"></div></div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center small mb-3">
+      <span class="text-muted">Budget</span><b>{{ p.budget|inr }}</b>
+    </div>
+
+    <div class="foot">
+      {% if p.status == 'completed' %}
+        <span class="ff-due is-done"><i class="bi bi-check2-circle"></i>Done</span>
+      {% elif p.days_left < 0 %}
+        <span class="ff-due is-late"><i class="bi bi-exclamation-circle"></i>{{ p.days_left|cut:"-" }} day{{ p.days_left|cut:"-"|pluralize }} late</span>
+      {% elif p.days_left <= 7 %}
+        <span class="ff-due is-soon"><i class="bi bi-clock"></i>{% if p.days_left == 0 %}Due today{% else %}{{ p.days_left }} day{{ p.days_left|pluralize }} left{% endif %}</span>
+      {% else %}
+        <span class="ff-due"><i class="bi bi-calendar-event"></i>{{ p.deadline|date:"d M Y" }}</span>
+      {% endif %}
+      <div class="d-flex gap-1">
+        <a class="btn btn-outline-primary btn-icon btn-sm" href="{% url 'project_update' p.pk %}" title="Edit" aria-label="Edit {{ p.title }}"><i class="bi bi-pencil"></i></a>
+        <a class="btn btn-outline-danger btn-icon btn-sm" href="{% url 'project_delete' p.pk %}" title="Delete" aria-label="Delete {{ p.title }}"><i class="bi bi-trash"></i></a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card"><div class="ff-empty">
+  <i class="bi bi-kanban"></i>
+  <div class="title">No projects found</div>
+  {% if request.GET.q or request.GET.status %}Nothing matches these filters. Try resetting them.{% else %}Create a project for a client to track tasks, deadlines and invoices.{% endif %}
+  <div class="mt-3"><a class="btn btn-primary" href="{% url 'project_create' %}">New project</a></div>
+</div></div>
+{% endif %}
+{% endblock %}

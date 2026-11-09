@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load ff_tags %}
+{% block title %}Payment forecast{% endblock %}
+{% block content %}
+
+<div class="ff-head">
+  <div>
+    <h1><i class="bi bi-graph-up-arrow text-info me-2"></i>Payment forecast</h1>
+    <div class="sub">A machine-learning estimate of which unpaid invoices may be paid late. A second opinion beside the client reliability score.</div>
+  </div>
+</div>
+
+{% if not result.ready %}
+  <div class="card"><div class="card-body">
+    <div class="fw-semibold mb-1"><i class="bi bi-info-circle text-warning me-1"></i>No forecast yet</div>
+    <div>{{ result.message }}</div>
+    <div class="text-muted small mt-2">
+      Better to say nothing than to guess: a model trained on a handful of invoices would only look clever.
+      Your history so far: {{ result.samples }} invoices with a known result ({{ result.late }} late, {{ result.on_time }} on time).
+    </div>
+  </div></div>
+{% else %}
+
+  <div class="card mb-3"><div class="card-body">
+    <div class="row g-4">
+      <div class="col-sm-6 col-lg-3"><div class="text-muted small">Invoices learned from</div>
+        <div class="ff-total" style="font-size:1.6rem">{{ result.samples }}</div>
+        <div class="small text-muted">{{ result.late }} late, {{ result.on_time }} on time</div></div>
+      <div class="col-sm-6 col-lg-3"><div class="text-muted small">Accuracy on past invoices</div>
+        <div class="ff-total text-success" style="font-size:1.6rem">{% widthratio result.accuracy 1 100 %}%</div>
+        <div class="small text-muted">tested on invoices it had not seen</div></div>
+      <div class="col-sm-6 col-lg-3"><div class="text-muted small">A plain guess would score</div>
+        <div class="ff-total" style="font-size:1.6rem">{% widthratio result.baseline 1 100 %}%</div>
+        <div class="small text-muted">always answering the most common result</div></div>
+      <div class="col-sm-6 col-lg-3"><div class="text-muted small">Learns from</div>
+        <div class="fw-bold mt-2">Your invoices only</div>
+        <div class="small text-muted">nobody else's data is used</div></div>
+    </div>
+    <div class="alert alert-warning small mt-4 mb-0">
+      <i class="bi bi-exclamation-triangle me-1"></i>
+      This is an estimate, not a promise. It is only as good as the history behind it, and a small history means a rough guess.
+    </div>
+  </div></div>
+
+  <div class="card"><div class="table-responsive"><table class="table table-hover">
+    <thead><tr>
+      <th>Invoice</th><th>Client</th><th class="num">Total</th><th>Due</th><th style="min-width:170px">Chance of paying late</th><th>Why</th><th>Reliability score says</th>
+    </tr></thead>
+    <tbody>
+    {% for row in result.rows %}
+      <tr>
+        <td><a class="fw-semibold" href="{% url 'invoice_detail' row.invoice.pk %}">{{ row.invoice.number }}</a></td>
+        <td><a href="{% url 'client_detail' row.client.pk %}">{{ row.client.name }}</a></td>
+        <td class="num">{{ row.total|inr }}</td>
+        <td class="text-nowrap">{{ row.invoice.due_date|date:"d M Y" }}</td>
+        <td>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge-s {% if row.risk == 'High' %}s-risky{% elif row.risk == 'Medium' %}s-average{% else %}s-reliable{% endif %}">{{ row.risk }}</span>
+            <b>{{ row.percent }}%</b>
+          </div>
+          <div class="ff-meter is-{{ row.risk|lower }} mt-2"><span style="width:{{ row.percent }}%"></span></div>
+        </td>
+        <td class="small" style="min-width:220px">{{ row.reason }}</td>
+        <td><span class="badge-s s-{{ row.reliability|cut:' '|lower }}">{{ row.reliability }}</span></td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7" class="text-muted text-center py-4">No unpaid invoices that are not yet due, so there is nothing to predict.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div></div>
+
+  <div class="ff-note mt-3">
+    <i class="bi bi-lightbulb"></i>
+    <span>How it works: the model looks at your past invoices and how each client paid them, then compares every open invoice with that pattern.
+    It uses how often the client was late before, how many days late, how many earlier invoices there are, the invoice size and the payment term. It does not use a client's country or name.</span>
+  </div>
+{% endif %}
+
+{% endblock %}

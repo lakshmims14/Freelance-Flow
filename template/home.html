@@ -1,0 +1,153 @@
+{% extends "public_base.html" %}
+{% block title %}FreelanceFlow: clients, projects and GST invoices for freelancers{% endblock %}
+{% block navlinks %}
+  <a class="plain d-none d-md-inline-block" href="#features">Features</a>
+  <a class="plain d-none d-sm-inline-block" href="{% url 'login' %}">Log in</a>
+{% endblock %}
+{% block body %}
+
+<!-- HERO -->
+<header class="lp-hero">
+  <div class="pub-wrap">
+    <div>
+      <h1>Know who owes you money, and who will pay late.</h1>
+      <p class="lead">
+        FreelanceFlow keeps your clients, projects and GST invoices in one place, scores how reliably each
+        client pays, and warns you which unpaid invoices are likely to run late.
+      </p>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-primary btn-lg" href="{% url 'signup' %}">Create free account</a>
+        <a class="btn btn-outline-secondary btn-lg" href="{% url 'login' %}">Log in</a>
+      </div>
+      <div class="lp-note">Made for freelancers in India. Amounts in rupees, GST worked out for you.</div>
+    </div>
+
+    <div class="lp-stage" aria-hidden="true">
+      <div class="lp-invoice">
+        <div class="row-between">
+          <div>
+            <div class="num">INV-2026-014</div>
+            <div class="who">Lotus Interiors, Pune</div>
+          </div>
+          <span class="badge-s s-overdue">Overdue 12 days</span>
+        </div>
+        <div class="lines">
+          <div><span>Professional services</span><span>₹1,20,000.00</span></div>
+          <div><span>GST @ 18%</span><span>₹21,600.00</span></div>
+          <div class="total"><span>Total</span><span>₹1,41,600.00</span></div>
+        </div>
+        <div class="lp-forecast">
+          <div class="line"><span>Chance of paying late</span><b>72% · High</b></div>
+          <div class="ff-meter is-high"><span style="width:72%"></span></div>
+        </div>
+      </div>
+      <div class="lp-float">
+        <div class="t">Client reliability</div>
+        <div class="s">41 / 100</div>
+        <div class="ff-meter is-risky mt-2"><span style="width:41%"></span></div>
+      </div>
+      <div class="lp-sample">Sample data</div>
+    </div>
+  </div>
+</header>
+
+<!-- FEATURES -->
+<section class="lp-section" id="features">
+  <div class="pub-wrap">
+    <h2>From the first project to the paid invoice</h2>
+    <p class="intro">The paperwork lives in one place, and FreelanceFlow keeps an eye on the thing that hurts most: late payments.</p>
+
+    <div class="lp-grid">
+
+      <article class="card lp-f w7">
+        <div class="vis">
+          <div class="r"><span class="n">Professional services</span><span class="amt">₹1,20,000.00</span></div>
+          <div class="r"><span class="n">GST @ 18%</span><span class="amt">₹21,600.00</span></div>
+          <div class="r"><span class="n"><b>Total</b></span><span class="amt">₹1,41,600.00</span></div>
+        </div>
+        <h3>GST invoices in rupees</h3>
+        <p>GST is worked out for you and amounts read the Indian way, in lakhs and crores. Download any invoice as a PDF to send to your client.</p>
+      </article>
+
+      <article class="card lp-f w5">
+        <div class="vis">
+          <div class="r"><span class="n">Meera Iyer</span><div class="ff-meter is-reliable"><span style="width:92%"></span></div><span class="amt">92</span></div>
+          <div class="r"><span class="n">Rohan Gupta</span><div class="ff-meter is-average"><span style="width:64%"></span></div><span class="amt">64</span></div>
+          <div class="r"><span class="n">Ben Carter</span><div class="ff-meter is-risky"><span style="width:31%"></span></div><span class="amt">31</span></div>
+        </div>
+        <h3>See who pays late</h3>
+        <p>Every client gets a score from how late their past invoices were paid, so you know who to trust before taking new work.</p>
+      </article>
+
+      <article class="card lp-f w4">
+        <div class="vis">
+          <div class="mb-2"><span class="badge-s s-sent">Polite</span> <span class="badge-s s-overdue ms-1">Firm</span></div>
+          <div style="color:#C3CCDA">Hi Meera, a quick reminder that invoice INV-2026-014 for ₹1,41,600 was due on 12 Oct&hellip;</div>
+        </div>
+        <h3>Reminder emails</h3>
+        <p>Send a polite nudge, or a firm one once an invoice is overdue. You can edit the email before it goes out.</p>
+      </article>
+
+      <article class="card lp-f w4">
+        <div class="vis">
+          <div class="r"><span class="n">INV-014</span><div class="ff-meter is-high"><span style="width:72%"></span></div><span class="amt">72%</span></div>
+          <div class="r"><span class="n">INV-017</span><div class="ff-meter is-medium"><span style="width:44%"></span></div><span class="amt">44%</span></div>
+          <div class="r"><span class="n">INV-019</span><div class="ff-meter is-low"><span style="width:12%"></span></div><span class="amt">12%</span></div>
+        </div>
+        <h3>Late-payment forecast</h3>
+        <p>A model trained on your own invoices estimates which unpaid ones may run late. With too little history, it says so instead of guessing.</p>
+      </article>
+
+      <article class="card lp-f w4">
+        <div class="vis">
+          <div class="lp-bubble q">Which invoices are overdue?</div>
+          <div class="lp-bubble a">INV-2026-014 from Lotus Interiors, ₹1,41,600, 12 days late.</div>
+        </div>
+        <h3>Ask in plain English</h3>
+        <p>Ask about overdue invoices, GST for a month, or a single client. The assistant only reads your own data.</p>
+      </article>
+
+      <article class="card lp-f w6">
+        <div class="vis">
+          <div class="r"><span class="n">Website redesign</span><div class="progress" style="width:110px"><div class="progress-bar" style="width:75%"></div></div><span class="amt">75%</span></div>
+          <div class="r"><span class="n">Brand guidelines</span><div class="progress" style="width:110px"><div class="progress-bar" style="width:30%"></div></div><span class="amt">30%</span></div>
+        </div>
+        <h3>Clients, projects and tasks</h3>
+        <p>Every client, project, task and deadline in one place, with progress bars and a warning when a deadline slips.</p>
+      </article>
+
+      <article class="card lp-f w6">
+        <div class="vis">
+          <div class="r"><span class="n">FY 2026-27</span><span class="amt">₹3,42,000</span></div>
+          <div class="r"><span class="n">GST collected, April to March</span><span class="amt">18 invoices</span></div>
+        </div>
+        <h3>GST summary for your accountant</h3>
+        <p>Month-by-month GST and totals for the Indian financial year, ready to check with your chartered accountant.</p>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CALL -->
+<section>
+  <div class="pub-wrap">
+    <div class="lp-cta">
+      <h2>Add your first client in a minute</h2>
+      <p class="intro mx-auto">Then create a project and an invoice, and let FreelanceFlow watch the due dates.</p>
+      <div class="d-flex flex-wrap gap-2 justify-content-center mt-4">
+        <a class="btn btn-primary btn-lg" href="{% url 'signup' %}">Get started free</a>
+        <a class="btn btn-outline-secondary btn-lg" href="{% url 'login' %}">Log in</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="lp-foot">
+  <div class="pub-wrap">
+    <span>© {% now "Y" %} FreelanceFlow</span>
+    <span><a href="{% url 'login' %}">Log in</a><a href="{% url 'signup' %}">Sign up</a></span>
+  </div>
+</footer>
+
+{% endblock %}

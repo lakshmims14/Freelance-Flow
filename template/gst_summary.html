@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load static ff_tags %}
+{% block title %}GST Summary{% endblock %}
+{% block content %}
+
+<div class="ff-head">
+  <div>
+    <h1>GST Summary</h1>
+    <div class="sub">Based on invoices marked Sent or Paid, grouped by issue date. Drafts are not counted.</div>
+  </div>
+</div>
+
+{% if month_rows %}
+
+  <div class="row g-3 mb-3">
+    <div class="col-sm-6 col-lg-4"><div class="card h-100"><div class="card-body ff-stat">
+      <div class="icon tone-primary"><i class="bi bi-percent"></i></div>
+      <div><div class="label">GST collected</div><div class="value">{{ totals.gst|inr }}</div><div class="note">across {{ totals.count }} invoice{{ totals.count|pluralize }}</div></div>
+    </div></div></div>
+    <div class="col-sm-6 col-lg-4"><div class="card h-100"><div class="card-body ff-stat">
+      <div class="icon tone-secondary"><i class="bi bi-cash-stack"></i></div>
+      <div><div class="label">Taxable amount</div><div class="value">{{ totals.taxable|inr }}</div><div class="note">your earnings before GST</div></div>
+    </div></div></div>
+    {% for y in year_rows|slice:":1" %}
+    <div class="col-lg-4"><div class="card h-100"><div class="card-body ff-stat">
+      <div class="icon tone-success"><i class="bi bi-calendar-check"></i></div>
+      <div><div class="label">{{ y.label }} (latest year)</div><div class="value">{{ y.gst|inr }}</div><div class="note">GST on {{ y.taxable|inr }} taxable</div></div>
+    </div></div></div>
+    {% endfor %}
+  </div>
+
+  <div class="card mb-3"><div class="card-body">
+    <div class="ff-panel-head">
+      <h2 class="ff-panel-title"><i class="bi bi-bar-chart-line text-primary"></i>GST collected each month</h2>
+      <span class="hint">Latest 12 months</span>
+    </div>
+    <div class="ff-chart" data-ff-columns data-source="gst-data" data-value-name="GST collected" data-color="#38BDF8" data-hover="#7DD3FC"></div>
+    {{ gst_chart|json_script:"gst-data" }}
+  </div></div>
+
+  <!-- Financial year totals (April to March) -->
+  <div class="ff-panel-head"><h2 class="ff-panel-title">Financial years (April to March)</h2></div>
+  <div class="row g-3 mb-4">
+    {% for y in year_rows %}
+    <div class="col-md-4"><div class="card h-100"><div class="card-body">
+      <div class="text-muted small">{{ y.label }}</div>
+      <div class="ff-total" style="font-size:1.6rem">{{ y.gst|inr }}</div>
+      <div class="small text-muted">GST collected · {{ y.count }} invoice{{ y.count|pluralize }}</div>
+      <div class="ff-kv mt-2"><span>Taxable</span><span>{{ y.taxable|inr }}</span></div>
+      <div class="ff-kv"><span>Total billed</span><span>{{ y.total|inr }}</span></div>
+    </div></div></div>
+    {% endfor %}
+  </div>
+
+  <!-- Month by month -->
+  <div class="ff-panel-head"><h2 class="ff-panel-title">Month by month</h2></div>
+  <div class="card"><div class="table-responsive"><table class="table table-hover">
+    <thead>
+      <tr><th>Month</th><th class="num">Invoices</th><th class="num">Taxable amount</th><th class="num">GST collected</th><th class="num">Total billed</th></tr>
+    </thead>
+    <tbody>
+    {% for r in month_rows %}
+      <tr>
+        <td class="fw-semibold">{{ r.label }}</td>
+        <td class="num">{{ r.count }}</td>
+        <td class="num">{{ r.taxable|inr }}</td>
+        <td class="num">{{ r.gst|inr }}</td>
+        <td class="num fw-bold">{{ r.total|inr }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div></div>
+
+  <p class="text-muted small mt-3">
+    This is a helper summary for your records, not an official tax return.
+    Please confirm the final figures with your chartered accountant before filing.
+  </p>
+
+{% else %}
+  <div class="card"><div class="ff-empty">
+    <i class="bi bi-percent"></i>
+    <div class="title">No GST data yet</div>
+    Create an invoice and mark it <strong>Sent</strong> or <strong>Paid</strong>, and it will appear here.
+    <div class="mt-3"><a class="btn btn-primary" href="{% url 'invoice_create' %}">Create invoice</a></div>
+  </div></div>
+{% endif %}
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/ff-charts.js' %}"></script>{% endblock %}
